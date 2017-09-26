@@ -3,12 +3,13 @@
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from django.test import LiveServerTestCase
 import unittest
 import time
 """Functional Test 功能测试 FT"""
 
 
-class NewVisitorTest(unittest.TestCase):
+class NewVisitorTest(LiveServerTestCase):
     def setUp(self):
         self.browser = webdriver.Firefox()
         # self.browser.implicitly_wait(3)  # (隐式)等待3秒，以便显示页面
@@ -23,7 +24,7 @@ class NewVisitorTest(unittest.TestCase):
 
     def test_can_start_a_list_and_retrieve_it_later(self):
         # 你打开了首页
-        self.browser.get('http://localhost:8000')
+        self.browser.get(self.live_server_url)
 
         #  你注意到在线待办事项应用网页的标题和头部都包含“To-Do”这个词
         self.assertIn('To-Do', self.browser.title)
@@ -79,5 +80,5 @@ class NewVisitorTest(unittest.TestCase):
         # 再次访问这个URL，待办事项还在
 
 
-if __name__ == '__main__':
-    unittest.main(warnings='ignore')
+# if __name__ == '__main__':
+#     unittest.main(warnings='ignore')
