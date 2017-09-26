@@ -41,11 +41,12 @@ class NewVisitorTest(LiveServerTestCase):
         # 你在文本框中输入了“Buy peacock feathers”
         inputbox.send_keys('Buy peacock feathers')
 
-        # 按回车，你发现页面更新了
-        # 在待办事项表格中显示了“1：Buy peacock feathers”
+        # 按回车，被带到了一个新的URL
+        # 这个页面的待办事项清单中显示了“1：Buy peacock feathers”
         inputbox.send_keys(Keys.ENTER)
+        edith_list_url = self.browser.current_url
+        self.assertRegex(edith_list_url, '/lists/.+')
         time.sleep(1)
-
         self.check_for_row_in_list_table('1: Buy peacock feathers')
         # self.assertTrue(
         #     any(row.text == '1: Buy peacock feathers' for row in rows),
@@ -72,9 +73,36 @@ class NewVisitorTest(LiveServerTestCase):
         #     [row.text for row in rows]
         # )
 
+        # 现在另一个人弗朗西斯来访问网站
 
-        # 网站生成唯一的URL，可以记住你的待办事项
-        # 而且页面有一些文字说明这个功能
+        ## 使用一个新的浏览器会话
+        ## 确保edith的信息不会从cooki中泄露
+        self.browser.quit()
+        self.browser = webdriver.Firefox()
+
+        # 弗朗西斯访问首页
+        # 页面中没有edith的清单信息
+        self.browser.get(self.live_server_url)
+        page_next = self.browser.find_element_by_tag_name('body').text
+        self.assertNotIn('Buy peacock feathers', page_next)
+        self.assertNotIn('make a fly', page_next)
+
+        # 弗朗西斯输入一个待办事项，新建一个清单
+        # 他不像edith一样兴趣盎然
+        inputbox = self.browser.find_element_by_id('id_new_item')
+        inputbox.send_keys('Buy milk')
+        inputbox.send_keys(Keys.ENTER)
+
+        # 弗朗西斯获得了他的唯一URL
+        francis_list_url = self.browser.current_url
+        self.assertRegex(francis_list_url, '/lists/.+')
+        self.assertNotEqual(francis_list_url, edith_list_url)
+
+        # 这个页面没有edith的清单
+        page_next = self.browser.find_elemetn_by_tag_name('body').text
+        self.assertNotIn('Buy peacock feathers', page_next)
+        self.assertIn('Buy milk', page_next)
+
         self.fail('Finish the test!')
 
         # 再次访问这个URL，待办事项还在
